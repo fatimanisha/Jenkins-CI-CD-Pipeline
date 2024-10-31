@@ -13,7 +13,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // Checkout code from version control
-                git branch: 'main', url: 'https://github.com/your-repo/infra-repo.git'
+                git branch: 'main', url: 'https://github.com/your-username/your-repo.git', credentialsId: 'github-pat'
             }
         }
 
