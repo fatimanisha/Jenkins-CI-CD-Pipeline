@@ -31,10 +31,6 @@ pipeline {
                 script {
                     // Generate and review a deployment plan
                     sh 'terraform plan -out=tfplan'  // For Terraform
-                    // Uncomment the next line for ARM templates
-                    // sh 'az deployment group create --resource-group MyResourceGroup --template-file azuredeploy.json --parameters azuredeploy.parameters.json'
-                    // Uncomment the next line for CloudFormation
-                    // sh 'aws cloudformation validate-template --template-body file://template.yaml'
                 }
             }
         }
@@ -56,6 +52,7 @@ pipeline {
                 }
             }
         }
+
         stage('DSC Configuration') {
             steps {
                 script {
@@ -63,7 +60,8 @@ pipeline {
                     sh 'pwsh -Command "Start-DscConfiguration -Path C:\\DSC -Wait -Verbose"'
                 }
             }
-    }
+        } // Close the 'DSC Configuration' stage
+    } // Close the 'stages' block
 
     post {
         always {
@@ -77,5 +75,4 @@ pipeline {
             echo 'Deployment failed.'
         }
     }
-}
-
+} // Close the 'pipeline' block
