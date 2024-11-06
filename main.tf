@@ -2,7 +2,7 @@
 provider "azurerm" {
   features {}
   use_msi = true
-  subscription_id = "aff84979-cede-467f-9d23-1088fcd2df1f"
+  subscription_id = "b330d894-4acd-4a5f-8b65-fc039e25fb53"
 }
 
 resource "azurerm_resource_group" "example" {
