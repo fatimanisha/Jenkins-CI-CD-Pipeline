@@ -5,7 +5,7 @@ pipeline {
             steps {
                 script {
                     // Log in to Azure using the managed identity assigned to the Jenkins VM
-                    sh 'az login --identity'
+                    sh 'az login --identity --allow-no-subscriptions'
                 }
             }
         }
