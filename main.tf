@@ -4,7 +4,6 @@ provider "azurerm" {
   features {}
   use_msi = true
 }
-4d68d10c-bcb0-4616-b14f-bea29b0bfb25
 
 resource "azurerm_resource_group" "example" {
   name     = "example-resources"
