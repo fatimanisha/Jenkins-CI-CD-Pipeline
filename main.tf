@@ -7,7 +7,7 @@ provider "azurerm" {
 
 resource "azurerm_resource_group" "example" {
   name     = "example-resources"
-  location = "East US"
+  location = "Canada Central"
 }
 
 resource "azurerm_storage_account" "example" {
