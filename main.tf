@@ -4,6 +4,7 @@ provider "azurerm" {
   features {}
   use_msi = true
 }
+4d68d10c-bcb0-4616-b14f-bea29b0bfb25
 
 resource "azurerm_resource_group" "example" {
   name     = "example-resources"
@@ -11,7 +12,7 @@ resource "azurerm_resource_group" "example" {
 }
 
 resource "azurerm_storage_account" "example" {
-  name                     = "examplestoracc"
+  name                     = "azureuser19"
   resource_group_name      = azurerm_resource_group.example.name
   location                 = azurerm_resource_group.example.location
   account_tier             = "Standard"
