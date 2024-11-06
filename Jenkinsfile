@@ -56,6 +56,13 @@ pipeline {
                 }
             }
         }
+        stage('DSC Configuration') {
+            steps {
+                script {
+                    // Use Azure PowerShell to deploy DSC configuration
+                    sh 'pwsh -Command "Start-DscConfiguration -Path C:\\DSC -Wait -Verbose"'
+                }
+            }
     }
 
     post {
@@ -64,10 +71,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Infrastructure deployment successful!'
+            echo 'Infrastructure and Configuration deployment successful!'
         }
         failure {
-            echo 'Infrastructure deployment failed.'
+            echo 'Deployment failed.'
         }
     }
 }
