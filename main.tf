@@ -2,8 +2,6 @@
 provider "azurerm" {
   features {}
   resource_provider_registrations = "none"
-  use_msi = true
-  subscription_id = "b330d894-4acd-4a5f-8b65-fc039e25fb53"
 }
 
 resource "azurerm_resource_group" "example" {
