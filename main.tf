@@ -1,7 +1,7 @@
 # Terraform Provider
 provider "azurerm" {
   features {}
-  resource_provider_registrations = "none"
+  use_msi = true
 }
 
 resource "azurerm_resource_group" "example" {
