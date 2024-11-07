@@ -3,6 +3,15 @@ provider "azurerm" {
   use_msi = true  
   subscription_id = "b330d894-4acd-4a5f-8b65-fc039e25fb53"
 }
+data "azurerm_subscription" "current" {}
+
+# Resource Group
+resource "azurerm_resource_group" "vm_sku_policy" {
+  name     = "test-resources"
+  location = "West Europe"
+}
+
+# Policy Definition
 resource "azurerm_policy_definition" "vm_sku_policy" {
   name         = "OnlyAllowHostingCROSImages"
   policy_type  = "Custom"
@@ -70,22 +79,28 @@ resource "azurerm_policy_definition" "vm_sku_policy" {
 POLICY_RULE
 }
 
-data "azurerm_subscription" "current" {}
-
-resource "azurerm_resource_group" "vm_sku_policy" {
-  name     = "test-resources"
-  location = "West Europe"
+# User-Assigned Managed Identity
+resource "azurerm_user_assigned_identity" "policy_assignment_identity" {
+  resource_group_name = azurerm_resource_group.vm_sku_policy.name
+  location            = azurerm_resource_group.vm_sku_policy.location
+  name                = "policyAssignmentIdentity"
 }
 
+# Policy Assignment with Identity
 resource "azurerm_subscription_policy_assignment" "example" {
-  name                 = "exlimit-vm-sku-assignmentample"
+  name                 = "limit-vm-sku-assignment"
   policy_definition_id = azurerm_policy_definition.vm_sku_policy.id
   subscription_id      = data.azurerm_subscription.current.id
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.policy_assignment_identity.id]
+  }
 }
 
-# Role assignment to allow the policy assignment to function correctly
+# Role Assignment for Policy Contributor Role
 resource "azurerm_role_assignment" "policy_contributor_assignment" {
   scope                = data.azurerm_subscription.current.id
   role_definition_name = "Policy Contributor"
-  principal_id         = azurerm_subscription_policy_assignment.example.identity[0].principal_id
+  principal_id         = azurerm_user_assigned_identity.policy_assignment_identity.principal_id
 }
