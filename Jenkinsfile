@@ -64,7 +64,7 @@ pipeline {
             steps {
                 script {
                     sh 'az extension add --name automation'
-                    az extension list --query "[?name=='automation']"
+                    az extension list --query "[?name=='automation']" -o table
 
                 }
             }
