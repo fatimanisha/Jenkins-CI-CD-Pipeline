@@ -87,5 +87,5 @@ resource "azurerm_subscription_policy_assignment" "example" {
 resource "azurerm_role_assignment" "policy_contributor_assignment" {
   scope                = data.azurerm_subscription.current.id
   role_definition_name = "Policy Contributor"
-  principal_id         = azurerm_subscription_policy_assignment.example.identity.principal_id
+  principal_id         = azurerm_subscription_policy_assignment.example.identity[0].principal_id
 }
