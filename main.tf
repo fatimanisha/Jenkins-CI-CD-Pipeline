@@ -12,7 +12,7 @@ resource "azurerm_role_definition" "custom_role" {
 
 # Define role assignments for existing or custom roles
 resource "azurerm_role_assignment" "role_assignment" {
-  principal_id   = "<principal-id>"   # User, group, or managed identity ID
+  principal_id   = "97afa94e-0893-4205-9b5c-9d702493c415"   # User, group, or managed identity ID
   role_definition_name = "CustomRoleName"  # Use built-in role names or custom role names
   scope          = "/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53/resourceGroups/demo-group"
 }
