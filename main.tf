@@ -82,3 +82,10 @@ resource "azurerm_subscription_policy_assignment" "example" {
   policy_definition_id = azurerm_policy_definition.vm_sku_policy.id
   subscription_id      = data.azurerm_subscription.current.id
 }
+
+# Role assignment to allow the policy assignment to function correctly
+resource "azurerm_role_assignment" "policy_contributor_assignment" {
+  scope                = data.azurerm_subscription.current.id
+  role_definition_name = "Policy Contributor"
+  principal_id         = azurerm_subscription_policy_assignment.example.identity.principal_id
+}
