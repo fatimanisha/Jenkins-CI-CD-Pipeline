@@ -53,7 +53,7 @@ pipeline {
             }
         }
 
-       stage('Assign DSC Configuration') {
+        stage('Assign DSC Configuration') {
             steps {
                 script {
                     // Log in to Azure (using managed identity or service principal)
@@ -70,7 +70,7 @@ pipeline {
                 }
             }
         }
-
+} // Close the 'stages' block
 
     post {
         always {
