@@ -19,12 +19,12 @@ resource "azurerm_resource_group" "vm_sku_policy" {
 
 # Conditionally create the policy definition only if it does not exist
 resource "azurerm_policy_definition" "vm_sku_policy" {
-  count        = length(data.azurerm_policy_definition.existing_policy.id) == 0 ? 1 : 0
-  name         = "OnlyAllowHostingCROSImages"
-  policy_type  = "Custom"
-  mode         = "All"
+  for_each    = length(data.azurerm_policy_definition.existing_policy.id) == 0 ? { "create" = "new" } : {}
+  name        = "OnlyAllowHostingCROSImages"
+  policy_type = "Custom"
+  mode        = "All"
   display_name = "Limit allowed VM SKUs"
-  description  = "This policy restricts the VM SKUs that can be deployed in the subscription."
+  description = "This policy restricts the VM SKUs that can be deployed in the subscription."
 
   policy_rule = <<POLICY_RULE
   {
@@ -89,7 +89,7 @@ POLICY_RULE
 # Policy Assignment (using either existing or newly created policy definition)
 resource "azurerm_subscription_policy_assignment" "example" {
   name                 = "limit-vm-sku-assignment"
-  policy_definition_id = coalesce(data.azurerm_policy_definition.existing_policy.id, azurerm_policy_definition.vm_sku_policy[0].id)
+  policy_definition_id = coalesce(data.azurerm_policy_definition.existing_policy.id, azurerm_policy_definition.vm_sku_policy["create"].id)
   subscription_id      = data.azurerm_subscription.current.id
 
   identity {
@@ -108,6 +108,6 @@ resource "azurerm_user_assigned_identity" "policy_assignment_identity" {
 # Role Assignment
 resource "azurerm_role_assignment" "policy_contributor_assignment" {
   scope                = data.azurerm_subscription.current.id
-  role_definition_name = "Resource Policy Contributor" # Use verified role name
+  role_definition_name = "Policy Contributor" # Use verified role name
   principal_id         = azurerm_user_assigned_identity.policy_assignment_identity.principal_id
 }
