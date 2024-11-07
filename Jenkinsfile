@@ -59,21 +59,25 @@ pipeline {
                 }
             }
         }
+
         stage('Install Azure CLI Automation Extension') {
             steps {
                 script {
                     sh 'az extension add --name automation'
+                    az extension list --query "[?name=='automation']"
+
                 }
             }
         }
+
         stage('Register DSC Node') {
             steps {
                 script {
                     sh '''
                     az automation dsc node register \
                         --automation-account-name automation-demo \
-                        --resource-group demo \
-                        --vm-name VM1 \
+                        --resource-group demo-group \
+                        --vm-id "/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53/resourceGroups/demo-group/providers/Microsoft.Compute/virtualMachines/VM2" \
                         --node-configuration-name ConfigureVM.localhost
                     '''
                 }
