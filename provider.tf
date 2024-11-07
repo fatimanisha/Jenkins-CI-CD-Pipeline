@@ -1,6 +1,14 @@
-# Terraform Provider
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">=3.0"
+    }
+  }
+}
+
 provider "azurerm" {
-  subscription_id = "b330d894-4acd-4a5f-8b65-fc039e25fb53"
   features {}
-  use_msi = true
+  use_msi = true  # Assuming you are using Managed Identity
+  subscription_id = "<your-subscription-id>"
 }
