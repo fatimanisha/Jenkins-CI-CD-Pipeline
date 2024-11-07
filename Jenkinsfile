@@ -52,20 +52,30 @@ pipeline {
                 }
             }
         }
-
-        stage('Assign DSC Configuration') {
+        stage('Check Azure CLI Version') {
             steps {
                 script {
-                    // Log in to Azure (using managed identity or service principal)
-                    sh 'az login --identity --allow-no-subscriptions'
+                    sh 'az --version'
+                }
+            }
+        }
 
-                    // Register the VM with the Azure Automation Account for DSC
+        stage('Install Azure CLI Automation Extension') {
+            steps {
+                script {
+                    sh 'az extension add --name automation'
+                }
+            }
+        }
+        stage('Register DSC Node') {
+            steps {
+                script {
                     sh '''
                     az automation dsc node register \
-                        --automation-account-name "automation-demo" \
-                        --resource-group "demo" \
-                        --vm-name "VM1" \
-                        --node-configuration-name "ConfigureVM.localhost"
+                        --automation-account-name automation-demo \
+                        --resource-group demo \
+                        --vm-name VM1 \
+                        --node-configuration-name ConfigureVM.localhost
                     '''
                 }
             }
