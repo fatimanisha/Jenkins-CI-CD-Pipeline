@@ -68,15 +68,20 @@ pipeline {
             }
         }
 
-        stage('Register DSC Node') {
+        stage('Register DSC Node with PowerShell') {
             steps {
                 script {
-                    sh '''
-                    az automation dsc node register \
-                        --automation-account-name automation-demo \
-                        --resource-group demo \
-                        --vm-id "/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53/resourceGroups/demo/providers/Microsoft.Compute/virtualMachines/VM1" \
-                        --node-configuration-name ConfigureVM.localhost
+                    powershell '''
+                    $AutomationAccountName = "automation-demo"
+                    $ResourceGroupName = "demo"
+                    $VmResourceId = "/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53/resourceGroups/demo/providers/Microsoft.Compute/virtualMachines/VM1"
+                    $NodeConfigurationName = "ConfigureVM.localhost"
+
+                    Register-AzAutomationDscNode `
+                        -AutomationAccountName $AutomationAccountName `
+                        -ResourceGroupName $ResourceGroupName `
+                        -AzureVMResourceId $VmResourceId `
+                        -NodeConfigurationName $NodeConfigurationName
                     '''
                 }
             }
