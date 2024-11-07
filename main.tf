@@ -1,45 +1,84 @@
-# Define custom Azure RBAC roles if needed
-resource "azurerm_role_definition" "custom_role" {
-  name        = "CustomRoleName"
-  scope       = "/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53"
-  description = "Custom role with specific permissions"
-  permissions {
-    actions     = ["Microsoft.Compute/*/read", "Microsoft.Network/*/read"]
-    not_actions = []
-  }
-  assignable_scopes = ["/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53"]
+provider "azurerm" {
+  features {}
+  use_msi = true  
+  subscription_id = "b330d894-4acd-4a5f-8b65-fc039e25fb53"
 }
-
-# Define role assignments for existing or custom roles
-resource "azurerm_role_assignment" "role_assignment" {
-  principal_id   = "97afa94e-0893-4205-9b5c-9d702493c415"   # User, group, or managed identity ID
-  role_definition_name = "CustomRoleName"  # Use built-in role names or custom role names
-  scope          = "/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53/resourceGroups/demo-group"
-}
-
-# Define Azure Policy
-resource "azurerm_policy_definition" "tag_policy" {
-  name         = "require-tags-policy"
+resource "azurerm_policy_definition" "vm_sku_policy" {
+  name         = "OnlyAllowHostingCROSImages"
   policy_type  = "Custom"
-  mode         = "Indexed"
-  display_name = "Require Tags on Resources"
-  policy_rule  = <<POLICY
-    {
-      "if": {
-        "field": "tags",
-        "exists": "false"
-      },
-      "then": {
-        "effect": "deny"
-      }
+  mode         = "All"
+  display_name = "Limit allowed VM SKUs"
+  description  = "This policy restricts the VM SKUs that can be deployed in the subscription."
+
+  policy_rule = <<POLICY_RULE
+  {
+    "if": {
+      "allOf": [
+        {
+          "field": "type",
+          "in": [
+            "Microsoft.Compute/virtualMachines",
+            "Microsoft.Compute/virtualMachineScaleSets"
+          ]
+        },
+        {
+          "not": {
+            "anyOf": [
+              {
+                "field": "Microsoft.Compute/imageSku",
+                "like": "*-Datacenter-gs"
+              },
+              {
+                "field": "Microsoft.Compute/imageSku",
+                "like": "2022-Datacenter*"
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Compute/imagePublisher",
+                    "equals": "Canonical"
+                  },
+                  {
+                    "field": "Microsoft.Compute/imageOffer",
+                    "in": [
+                      "0001-com-ubuntu-server-focal",
+                      "0001-com-ubuntu-server-jammy",
+                      "UbuntuServer"
+                    ]
+                  },
+                  {
+                    "field": "Microsoft.Compute/imageSku",
+                    "in": [
+                      "20_04-lts-gen2",
+                      "20_04-lts-cvm",
+                      "22_04-lts-cvm",
+                      "20_04-lts",
+                      "22_04-lts"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "then": {
+      "effect": "deny"
     }
-  POLICY
+  }
+POLICY_RULE
 }
 
-# Assign the policy to a specific scope
-resource "azurerm_policy_assignment" "policy_assignment" {
-  name                 = "require-tags-assignment"
-  policy_definition_id = azurerm_policy_definition.tag_policy.id
-  scope                = "/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53/resourceGroups/demo-group"
-  display_name         = "Require Tags Assignment"
+data "azurerm_subscription" "current" {}
+
+resource "azurerm_resource_group" "vm_sku_policy" {
+  name     = "test-resources"
+  location = "West Europe"
+}
+
+resource "azurerm_subscription_policy_assignment" "example" {
+  name                 = "exlimit-vm-sku-assignmentample"
+  policy_definition_id = azurerm_policy_definition.vm_sku_policy.id
+  subscription_id      = data.azurerm_subscription.current.id
 }
