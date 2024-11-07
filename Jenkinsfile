@@ -67,6 +67,7 @@ pipeline {
                 }
             }
         }
+
         stage('Register DSC Node') {
             steps {
                 script {
@@ -74,12 +75,13 @@ pipeline {
                     az automation dsc node register \
                         --automation-account-name automation-demo \
                         --resource-group demo \
-                        --vm-name VM1 \
+                        --vm-id "/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53/resourceGroups/demo/providers/Microsoft.Compute/virtualMachines/VM1" \
                         --node-configuration-name ConfigureVM.localhost
                     '''
                 }
             }
         }
+    }
 } // Close the 'stages' block
 
     post {
