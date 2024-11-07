@@ -53,16 +53,24 @@ pipeline {
             }
         }
 
-        stage('DSC Configuration') {
+       stage('Assign DSC Configuration') {
             steps {
                 script {
-            // Use Azure PowerShell to deploy DSC configuration
-            sh 'pwsh -Command "Start-DscConfiguration -Path \"/home/azureuser/DSC\" -Wait -Verbose -Force"'
+                    // Log in to Azure (using managed identity or service principal)
+                    sh 'az login --identity --allow-no-subscriptions'
+
+                    // Register the VM with the Azure Automation Account for DSC
+                    sh '''
+                    az automation dsc node register \
+                        --automation-account-name "<AutomationAccountName>" \
+                        --resource-group "<ResourceGroupName>" \
+                        --vm-name "<VMName>" \
+                        --node-configuration-name "<DSCConfigurationName>.localhost"
+                    '''
                 }
             }
         }
 
-    } // Close the 'stages' block
 
     post {
         always {
