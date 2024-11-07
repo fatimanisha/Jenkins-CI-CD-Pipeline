@@ -4,27 +4,22 @@ provider "azurerm" {
   subscription_id = "b330d894-4acd-4a5f-8b65-fc039e25fb53"
 }
 
+# Subscription Data
 data "azurerm_subscription" "current" {}
 
-# Data source to check if the policy definition already exists
-data "azurerm_policy_definition" "existing_policy" {
-  name = "OnlyAllowHostingCROSImages"
-}
-
-# Resource group definition (if needed for identity)
+# Resource Group
 resource "azurerm_resource_group" "vm_sku_policy" {
   name     = "test-resources"
   location = "West Europe"
 }
 
-# Conditionally create the policy definition only if it does not exist
+# Policy Definition
 resource "azurerm_policy_definition" "vm_sku_policy" {
-  for_each    = length(data.azurerm_policy_definition.existing_policy.id) == 0 ? { "create" = "new" } : {}
-  name        = "OnlyAllowHostingCROSImages"
-  policy_type = "Custom"
-  mode        = "All"
+  name         = "OnlyAllowHostingCROSImages"
+  policy_type  = "Custom"
+  mode         = "All"
   display_name = "Limit allowed VM SKUs"
-  description = "This policy restricts the VM SKUs that can be deployed in the subscription."
+  description  = "This policy restricts the VM SKUs that can be deployed in the subscription."
 
   policy_rule = <<POLICY_RULE
   {
@@ -86,10 +81,17 @@ resource "azurerm_policy_definition" "vm_sku_policy" {
 POLICY_RULE
 }
 
-# Policy Assignment (using either existing or newly created policy definition)
+# User-Assigned Managed Identity
+resource "azurerm_user_assigned_identity" "policy_assignment_identity" {
+  resource_group_name = azurerm_resource_group.vm_sku_policy.name
+  location            = azurerm_resource_group.vm_sku_policy.location
+  name                = "policyAssignmentIdentity"
+}
+
+# Policy Assignment with Identity
 resource "azurerm_subscription_policy_assignment" "example" {
   name                 = "limit-vm-sku-assignment"
-  policy_definition_id = coalesce(data.azurerm_policy_definition.existing_policy.id, azurerm_policy_definition.vm_sku_policy["create"].id)
+  policy_definition_id = azurerm_policy_definition.vm_sku_policy.id
   subscription_id      = data.azurerm_subscription.current.id
 
   identity {
@@ -98,16 +100,9 @@ resource "azurerm_subscription_policy_assignment" "example" {
   }
 }
 
-# User-Assigned Identity
-resource "azurerm_user_assigned_identity" "policy_assignment_identity" {
-  resource_group_name = azurerm_resource_group.vm_sku_policy.name
-  location            = azurerm_resource_group.vm_sku_policy.location
-  name                = "policyAssignmentIdentity"
-}
-
-# Role Assignment
+# Role Assignment for Policy Contributor Role
 resource "azurerm_role_assignment" "policy_contributor_assignment" {
   scope                = data.azurerm_subscription.current.id
-  role_definition_name = "Policy Contributor" # Use verified role name
+  role_definition_name = "Policy Contributor"
   principal_id         = azurerm_user_assigned_identity.policy_assignment_identity.principal_id
 }
