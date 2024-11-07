@@ -6,4 +6,3 @@ Configuration ConfigureVM {
         }
     }
 }
-InstallIIS

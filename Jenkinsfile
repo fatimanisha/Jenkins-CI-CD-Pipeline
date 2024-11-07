@@ -62,10 +62,10 @@ pipeline {
                     // Register the VM with the Azure Automation Account for DSC
                     sh '''
                     az automation dsc node register \
-                        --automation-account-name "<AutomationAccountName>" \
-                        --resource-group "<ResourceGroupName>" \
-                        --vm-name "<VMName>" \
-                        --node-configuration-name "<DSCConfigurationName>.localhost"
+                        --automation-account-name "automation-demo" \
+                        --resource-group "demo" \
+                        --vm-name "VM1" \
+                        --node-configuration-name "ConfigureVM.localhost"
                     '''
                 }
             }
