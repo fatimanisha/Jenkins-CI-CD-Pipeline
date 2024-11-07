@@ -5,9 +5,8 @@ pipeline {
         stage('Initialize Terraform') {
             steps {
                 script {
-                    dir('terraform/rbac-policies') {
-                        sh 'terraform init'
-                    }
+                    // Initialize Terraform in the root directory
+                    sh 'terraform init'
                 }
             }
         }
@@ -15,10 +14,8 @@ pipeline {
         stage('Role Assignment') {
             steps {
                 script {
-                    dir('terraform/rbac-policies') {
-                        // Apply RBAC roles and assignments
-                        sh 'terraform apply -auto-approve -target=azurerm_role_assignment.role_assignment'
-                    }
+                    // Apply RBAC roles and assignments
+                    sh 'terraform apply -auto-approve -target=azurerm_role_assignment.role_assignment'
                 }
             }
         }
@@ -26,10 +23,8 @@ pipeline {
         stage('Policy Enforcement') {
             steps {
                 script {
-                    dir('terraform/rbac-policies') {
-                        // Apply Azure policies
-                        sh 'terraform apply -auto-approve -target=azurerm_policy_assignment.policy_assignment'
-                    }
+                    // Apply Azure policies
+                    sh 'terraform apply -auto-approve -target=azurerm_policy_assignment.policy_assignment'
                 }
             }
         }
@@ -38,9 +33,7 @@ pipeline {
             steps {
                 script {
                     // Run compliance checks
-                    dir('terraform/rbac-policies') {
-                        sh 'terraform plan'
-                    }
+                    sh 'terraform plan'
 
                     // Optional: Retrieve compliance summary using Azure CLI
                     sh '''
