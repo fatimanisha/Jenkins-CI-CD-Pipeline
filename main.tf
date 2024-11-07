@@ -19,7 +19,7 @@ resource "azurerm_resource_group" "vm_sku_policy" {
 
 # Conditionally create the policy definition only if it does not exist
 resource "azurerm_policy_definition" "vm_sku_policy" {
-  count        = try(length(data.azurerm_policy_definition.existing_policy.id), 0) == 0 ? 1 : 0
+  count        = length(data.azurerm_policy_definition.existing_policy.id) == 0 ? 1 : 0
   name         = "OnlyAllowHostingCROSImages"
   policy_type  = "Custom"
   mode         = "All"
@@ -108,6 +108,6 @@ resource "azurerm_user_assigned_identity" "policy_assignment_identity" {
 # Role Assignment
 resource "azurerm_role_assignment" "policy_contributor_assignment" {
   scope                = data.azurerm_subscription.current.id
-  role_definition_name = "Policy Contributor" # Use verified role name
+  role_definition_name = "Resource Policy Contributor" # Use verified role name
   principal_id         = azurerm_user_assigned_identity.policy_assignment_identity.principal_id
 }
