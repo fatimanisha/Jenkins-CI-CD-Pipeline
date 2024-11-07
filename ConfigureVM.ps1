@@ -6,4 +6,4 @@ Configuration ConfigureVM {
         }
     }
 }
-ConfigureVM -OutputPath "C:\DSC\"
+InstallIIS

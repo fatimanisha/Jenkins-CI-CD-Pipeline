@@ -56,11 +56,12 @@ pipeline {
         stage('DSC Configuration') {
             steps {
                 script {
-                    // Use Azure PowerShell to deploy DSC configuration
-                    sh 'pwsh -Command "Start-DscConfiguration -Path C:\\DSC -Wait -Verbose"'
+            // Use Azure PowerShell to deploy DSC configuration
+            sh 'pwsh -Command "Start-DscConfiguration -Path \"/home/azureuser/DSC\" -Wait -Verbose -Force"'
                 }
             }
-        } // Close the 'DSC Configuration' stage
+        }
+
     } // Close the 'stages' block
 
     post {
