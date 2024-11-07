@@ -1,100 +1,65 @@
 pipeline {
     agent any
+
     stages {
-        stage('Login to Azure') {
+        stage('Initialize Terraform') {
             steps {
                 script {
-                    // Log in to Azure using the managed identity assigned to the Jenkins VM
-                    sh 'az login --identity --allow-no-subscriptions'
+                    dir('terraform/rbac-policies') {
+                        sh 'terraform init'
+                    }
                 }
             }
         }
 
-        stage('Checkout Code') {
-            steps {
-                // Checkout code from version control
-                git branch: 'main', url: 'https://github.com/fatimanisha/Jenkins-CI-CD-Pipeline.git', credentialsId: 'github-pat'
-            }
-        }
-
-        stage('Initialize') {
+        stage('Role Assignment') {
             steps {
                 script {
-                    // Initialize Terraform or configure for ARM/CloudFormation
-                    sh 'terraform init'  // Adjust this for ARM or CloudFormation setup if necessary
+                    dir('terraform/rbac-policies') {
+                        // Apply RBAC roles and assignments
+                        sh 'terraform apply -auto-approve -target=azurerm_role_assignment.role_assignment'
+                    }
                 }
             }
         }
 
-        stage('Plan') {
+        stage('Policy Enforcement') {
             steps {
                 script {
-                    // Generate and review a deployment plan
-                    sh 'terraform plan -out=tfplan'  // For Terraform
+                    dir('terraform/rbac-policies') {
+                        // Apply Azure policies
+                        sh 'terraform apply -auto-approve -target=azurerm_policy_assignment.policy_assignment'
+                    }
                 }
             }
         }
 
-        stage('Apply') {
+        stage('Compliance Validation') {
             steps {
                 script {
-                    // Apply the changes to provision resources
-                    sh 'terraform apply -auto-approve tfplan'  // Adjust for other providers
-                }
-            }
-        }
+                    // Run compliance checks
+                    dir('terraform/rbac-policies') {
+                        sh 'terraform plan'
+                    }
 
-        stage('Validation') {
-            steps {
-                script {
-                    // Perform any necessary validation, e.g., checking resource status
-                    sh 'terraform output'  // Outputs the result for inspection
-                }
-            }
-        }
-        stage('Check Azure CLI Version') {
-            steps {
-                script {
-                    sh 'az --version'
-                }
-            }
-        }
-
-        stage('Install Azure CLI Automation Extension') {
-            steps {
-                script {
-                    sh 'az extension add --name automation'
-                    az extension list --query "[?name=='automation']" -o table
-
-                }
-            }
-        }
-
-        stage('Register DSC Node') {
-            steps {
-                script {
+                    // Optional: Retrieve compliance summary using Azure CLI
                     sh '''
-                    az automation dsc node register \
-                        --automation-account-name automation-demo \
-                        --resource-group demo-group \
-                        --vm-id "/subscriptions/b330d894-4acd-4a5f-8b65-fc039e25fb53/resourceGroups/demo-group/providers/Microsoft.Compute/virtualMachines/VM2" \
-                        --node-configuration-name ConfigureVM.localhost
+                    az policy state summarize --management-group <your-management-group> --output table
                     '''
                 }
             }
         }
-} // Close the 'stages' block
+    }
 
     post {
         always {
-            // Clean up after execution, e.g., removing generated files or temporary credentials
             cleanWs()
         }
         success {
-            echo 'Infrastructure and Configuration deployment successful!'
+            echo 'RBAC and Policies Deployment Successful!'
         }
         failure {
-            echo 'Deployment failed.'
+            echo 'RBAC and Policies Deployment Failed!'
         }
     }
-} // Close the 'pipeline' block
+}
