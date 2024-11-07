@@ -35,10 +35,7 @@ pipeline {
                     // Run compliance checks
                     sh 'terraform plan'
 
-                    // Optional: Retrieve compliance summary using Azure CLI
-                    sh '''
-                    az policy state summarize --management-group <your-management-group> --output table
-                    '''
+                
                 }
             }
         }
