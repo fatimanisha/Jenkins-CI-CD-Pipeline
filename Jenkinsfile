@@ -10,7 +10,22 @@ pipeline {
                 }
             }
         }
-
+        stage('Plan Terraform') {
+            steps {
+                script {
+                        sh 'terraform plan'
+                            }
+                        }
+                    }
+        stage('Apply Terraform') {
+            steps {
+                script {
+                        // Apply changes to create or update policies
+                        sh 'terraform apply -auto-approve'
+                    }
+                }
+            }
+            
         stage('Role Assignment') {
             steps {
                 script {
@@ -32,9 +47,7 @@ pipeline {
         stage('Compliance Validation') {
             steps {
                 script {
-                    // Run compliance checks
                     sh 'terraform plan'
-
                 
                 }
             }
