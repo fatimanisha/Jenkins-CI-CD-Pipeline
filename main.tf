@@ -93,6 +93,7 @@ resource "azurerm_subscription_policy_assignment" "example" {
   name                 = "limit-vm-sku-assignment"
   policy_definition_id = azurerm_policy_definition.vm_sku_policy.id
   subscription_id      = data.azurerm_subscription.current.id
+  location             = "West Europe"  
 
   identity {
     type         = "UserAssigned"
@@ -103,6 +104,6 @@ resource "azurerm_subscription_policy_assignment" "example" {
 # Role Assignment for Policy Contributor Role
 resource "azurerm_role_assignment" "policy_contributor_assignment" {
   scope                = data.azurerm_subscription.current.id
-  role_definition_name = "Policy Contributor"
+  role_definition_name = "Resource Policy Contributor"
   principal_id         = azurerm_user_assigned_identity.policy_assignment_identity.principal_id
 }
